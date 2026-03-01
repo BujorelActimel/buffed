@@ -19,6 +19,7 @@ Config :: struct {
 
 BASE_CONFIG_PATH :: ".config/buffed/config.json"
 DEFAULT_CONFIG :: Config{
+    font_path = "/usr/share/fonts/TTF/JetBrainsMonoNerdFont-SemiBold.ttf",
     font_size = 14, 
     tab_size = 4, 
     use_spaces = true,
