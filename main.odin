@@ -3,7 +3,9 @@ package main
 import rl "vendor:raylib"
 import "core:fmt"
 import "core:mem"
+import "core:os"
 import "editor"
+import "render"
 
 main :: proc() {
     tracker: mem.Tracking_Allocator
@@ -13,12 +15,14 @@ main :: proc() {
 
     // ----------------------------------------------------------------
 
-    state, _ := editor.editor_init()
+    file_path := os.args[1] if len(os.args) > 1 else ""
+
+    state, _ := editor.editor_init(file_path)
     defer editor.editor_destroy(&state)
 
     for !rl.WindowShouldClose() {
         rl.BeginDrawing()
-        rl.ClearBackground(rl.BLACK)
+        render.render_editor(&state.buff, &state.font, &state.theme)
         rl.EndDrawing()
     }
 

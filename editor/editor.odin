@@ -1,32 +1,40 @@
 package editor
 
 import rl "vendor:raylib"
+import "core:os"
 import "../config"
 import "../render"
+import "../buffer"
 
 Editor_State :: struct {
     config: config.Config,
     theme:  render.Theme,
     font:   render.Font_Info,
+    buff:    buffer.Buffer,
 }
 
-editor_init :: proc() -> (Editor_State, bool) {
+editor_init :: proc(file_path: string) -> (Editor_State, bool) {
     state: Editor_State
 
     state.config, _ = config.config_load()
+    state.theme,  _ = render.theme_load(state.config)
 
-    state.theme, _ = render.theme_load(state.config)
-
-    rl.InitWindow(800, 600, "Buffed")
+    rl.SetConfigFlags({.WINDOW_RESIZABLE})
+    rl.InitWindow(0, 0, "Buffed")
     rl.SetTargetFPS(60)
 
     state.font = render.font_load(state.config)
+
+    if file_path != "" {
+        state.buff, _ = buffer.buffer_load_file(file_path)
+    }
 
     return state, true
 }
 
 editor_destroy :: proc(state: ^Editor_State) {
     config.config_destroy(&state.config)
+    buffer.buffer_destroy(&state.buff)
     rl.UnloadFont(state.font.font)
     rl.CloseWindow()
 }

@@ -19,7 +19,7 @@ Config :: struct {
 
 BASE_CONFIG_PATH :: ".config/buffed/config.json"
 DEFAULT_CONFIG :: Config{
-    font_size  = 14,
+    font_size  = 28,
     tab_size   = 4,
     use_spaces = true,
 }
