@@ -53,6 +53,16 @@ buffer_line_count :: proc(buff: ^Buffer) -> int {
     return len(buff.line_ends)
 }
 
+buffer_line_start :: proc(buff: ^Buffer, line: int) -> int {
+    if line < 0 || line >= len(buff.line_ends) do return -1
+
+    return buff.line_ends[line-1]+1 if line > 0 else 0
+}
+
+buffer_line_length :: proc(buff: ^Buffer, line: int) -> int {
+    return buff.line_ends[line] - buff.line_ends[line-1] - 1 if line > 0 else buff.line_ends[line]
+}
+
 buffer_destroy :: proc(buff: ^Buffer) {
     delete(buff.data)
     delete(buff.line_ends)
