@@ -1,0 +1,10 @@
+extensions:          .py
+keywords:            if elif else for while return break continue pass def class import from as with try except finally raise lambda yield del global nonlocal assert
+type_keywords:       int float bool str list dict tuple set None True False bytes bytearray
+line_comment:        #
+string_delims:       " '
+multiline_string:    """
+has_preprocessor:    false
+operator_chars:      +-*/=!<>&|^~%@
+detect_functions:    true
+detect_constants:    true

@@ -1,0 +1,10 @@
+extensions:          .rs
+keywords:            if else for while loop return break continue match use mod pub fn struct enum impl trait where let mut const unsafe async await move
+type_keywords:       i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 f64 bool str String usize isize char
+line_comment:        //
+block_comment:       /* */
+string_delims:       "
+has_preprocessor:    false
+operator_chars:      +-*/=!<>&|^~%?:
+detect_functions:    true
+detect_constants:    true

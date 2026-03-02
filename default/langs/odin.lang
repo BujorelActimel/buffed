@@ -1,0 +1,10 @@
+extensions:          .odin
+keywords:            if else for when return break continue fallthrough defer proc struct enum union import package using
+type_keywords:       int i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 bool string rune rawptr byte uint uintptr
+line_comment:        //
+block_comment:       /* */
+string_delims:       " `
+has_preprocessor:    false
+operator_chars:      +-*/=!<>&|^~%?:@
+detect_functions:    true
+detect_constants:    false

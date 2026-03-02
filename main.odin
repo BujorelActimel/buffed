@@ -3,8 +3,7 @@ package main
 import rl "vendor:raylib"
 import "core:fmt"
 import "core:mem"
-import "config"
-import "render"
+import "editor"
 
 main :: proc() {
     tracker: mem.Tracking_Allocator
@@ -13,16 +12,15 @@ main :: proc() {
     context.allocator = mem.tracking_allocator(&tracker)
 
     // ----------------------------------------------------------------
-    
-    configuration, ok := config.config_load()
-    if !ok {
-        fmt.println("Using default config")
+
+    state, _ := editor.editor_init()
+    defer editor.editor_destroy(&state)
+
+    for !rl.WindowShouldClose() {
+        rl.BeginDrawing()
+        rl.ClearBackground(rl.BLACK)
+        rl.EndDrawing()
     }
-
-    rl.InitWindow(800, 600, "Buffed")
-    defer rl.CloseWindow()
-
-    font := render.font_load(configuration)
 
     // ----------------------------------------------------------------
 

@@ -9,7 +9,7 @@ import "core:os"
 Config :: struct {
     font_path:   string,
     font_size:   int,
-    theme:       string,
+    theme_path:  string,
     keybindings: string,
     langs_dir:   string,
     tab_size:    int,
@@ -19,9 +19,8 @@ Config :: struct {
 
 BASE_CONFIG_PATH :: ".config/buffed/config.json"
 DEFAULT_CONFIG :: Config{
-    font_path = "/usr/share/fonts/TTF/JetBrainsMonoNerdFont-SemiBold.ttf",
-    font_size = 14, 
-    tab_size = 4, 
+    font_size  = 14,
+    tab_size   = 4,
     use_spaces = true,
 }
 
@@ -58,5 +57,20 @@ config_load :: proc() -> (Config, bool) {
         return DEFAULT_CONFIG, false
     }
 
+    if config.font_size == 0 do config.font_size = DEFAULT_CONFIG.font_size
+    if config.tab_size  == 0 do config.tab_size  = DEFAULT_CONFIG.tab_size
+
     return config, true
+}
+
+config_destroy :: proc(conf: ^Config) {
+    delete(conf.font_path)
+    delete(conf.theme_path)
+    delete(conf.keybindings)
+    delete(conf.langs_dir)
+    for key, val in conf.lsp_servers {
+        delete(key)
+        delete(val)
+    }
+    delete(conf.lsp_servers)
 }

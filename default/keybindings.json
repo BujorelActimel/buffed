@@ -1,0 +1,15 @@
+{
+  "ctrl+c":         "copy",
+  "ctrl+x":         "cut",
+  "ctrl+v":         "paste",
+  "ctrl+z":         "undo",
+  "ctrl+shift+z":   "redo",
+  "ctrl+p":         "open_fuzzy_finder",
+  "ctrl+shift+k":   "delete_line",
+  "ctrl+d":         "select_next_occurrence",
+  "ctrl+s":         "save_file",
+  "f12":            "go_to_definition",
+  "ctrl+alt+up":    "add_cursor_above",
+  "ctrl+alt+down":  "add_cursor_below",
+  "ctrl+b":         "toggle_file_tree"
+}

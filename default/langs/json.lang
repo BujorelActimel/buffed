@@ -1,0 +1,9 @@
+extensions:          .json
+keywords:            true false null
+type_keywords:
+line_comment:
+string_delims:       "
+has_preprocessor:    false
+operator_chars:      :,
+detect_functions:    false
+detect_constants:    false

@@ -1,0 +1,10 @@
+extensions:          .c .h
+keywords:            if else for while do return break continue switch case default goto typedef extern static inline volatile const sizeof
+type_keywords:       int char short long float double void unsigned signed bool size_t uint8_t uint16_t uint32_t uint64_t int8_t int16_t int32_t int64_t
+line_comment:        //
+block_comment:       /* */
+string_delims:       "
+has_preprocessor:    true
+operator_chars:      +-*/=!<>&|^~%?:
+detect_functions:    true
+detect_constants:    true
