@@ -4,10 +4,11 @@ import "core:os"
 import "core:strings"
 
 Buffer :: struct {
-    data: [dynamic]u8,
+    data:      [dynamic]u8,
     line_ends: [dynamic]int, // byte offsets of each '\n'
     file_path: string,
     modified:  bool,
+    history:   History,
 }
 
 buffer_load_file :: proc(path: string) -> (Buffer, bool) {
@@ -63,7 +64,15 @@ buffer_line_length :: proc(buff: ^Buffer, line: int) -> int {
     return buff.line_ends[line] - buff.line_ends[line-1] - 1 if line > 0 else buff.line_ends[line]
 }
 
-buffer_insert :: proc(buff: ^Buffer, pos: int, data: []u8) {
+buffer_insert :: proc(buff: ^Buffer, pos: int, data: []u8, record: bool = true) {
+    if record {
+        for r in buff.history.redo { delete(r.data) }
+        clear(&buff.history.redo)
+        data_copy := make([]u8, len(data))
+        copy(data_copy, data)
+        append(&buff.history.undo, Edit_Record{kind = .Insert, pos = pos, data = data_copy})
+    }
+
     n := len(data)
     old_len := len(buff.data)
 
@@ -96,7 +105,15 @@ buffer_insert :: proc(buff: ^Buffer, pos: int, data: []u8) {
     buff.modified = true
 }
 
-buffer_delete :: proc(buff: ^Buffer, pos: int, count: int) {
+buffer_delete :: proc(buff: ^Buffer, pos: int, count: int, record: bool = true) {
+    if record {
+        for r in buff.history.redo { delete(r.data) }
+        clear(&buff.history.redo)
+        data_copy := make([]u8, count)
+        copy(data_copy, buff.data[pos:pos+count])
+        append(&buff.history.undo, Edit_Record{kind = .Delete, pos = pos, data = data_copy})
+    }
+
     copy(buff.data[pos:], buff.data[pos+count:])
     resize(&buff.data, len(buff.data) - count)
 
@@ -138,4 +155,5 @@ buffer_destroy :: proc(buff: ^Buffer) {
     delete(buff.data)
     delete(buff.line_ends)
     delete(buff.file_path)
+    history_destroy(&buff.history)
 }
