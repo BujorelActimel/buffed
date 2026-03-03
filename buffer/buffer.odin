@@ -63,6 +63,77 @@ buffer_line_length :: proc(buff: ^Buffer, line: int) -> int {
     return buff.line_ends[line] - buff.line_ends[line-1] - 1 if line > 0 else buff.line_ends[line]
 }
 
+buffer_insert :: proc(buff: ^Buffer, pos: int, data: []u8) {
+    n := len(data)
+    old_len := len(buff.data)
+
+    resize(&buff.data, old_len + n)
+    copy(buff.data[pos+n:], buff.data[pos:old_len])
+    copy(buff.data[pos:], data)
+
+    lo, hi := 0, len(buff.line_ends)
+    for lo < hi {
+        mid := lo + (hi - lo) / 2
+        if buff.line_ends[mid] < pos {
+            lo = mid + 1
+        } else {
+            hi = mid
+        }
+    }
+    insert_idx := lo
+
+    for i in insert_idx..<len(buff.line_ends) {
+        buff.line_ends[i] += n
+    }
+
+    for i in 0..<n {
+        if data[i] == '\n' {
+            inject_at(&buff.line_ends, insert_idx, pos + i)
+            insert_idx += 1
+        }
+    }
+
+    buff.modified = true
+}
+
+buffer_delete :: proc(buff: ^Buffer, pos: int, count: int) {
+    copy(buff.data[pos:], buff.data[pos+count:])
+    resize(&buff.data, len(buff.data) - count)
+
+    lo, hi := 0, len(buff.line_ends)
+    for lo < hi {
+        mid := lo + (hi - lo) / 2
+        if buff.line_ends[mid] < pos {
+            lo = mid + 1
+        } else {
+            hi = mid
+        }
+    }
+    start_idx := lo
+
+    lo, hi = start_idx, len(buff.line_ends)
+    for lo < hi {
+        mid := lo + (hi - lo) / 2
+        if buff.line_ends[mid] < pos + count {
+            lo = mid + 1
+        } else {
+            hi = mid
+        }
+    }
+    end_idx := lo
+
+    if end_idx > start_idx {
+        copy(buff.line_ends[start_idx:], buff.line_ends[end_idx:])
+        resize(&buff.line_ends, len(buff.line_ends) - (end_idx - start_idx))
+    }
+
+    for i in start_idx..<len(buff.line_ends) {
+        buff.line_ends[i] -= count
+    }
+
+    buff.modified = true
+}
+
 buffer_destroy :: proc(buff: ^Buffer) {
     delete(buff.data)
     delete(buff.line_ends)
