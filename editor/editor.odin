@@ -13,6 +13,7 @@ Editor_State :: struct {
     buff:   buffer.Buffer,
     cursor: cursor.Selection,
     keymap: Keymap,
+    scroll: int,
 }
 
 editor_init :: proc(file_path: string) -> (Editor_State, bool) {
