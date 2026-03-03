@@ -21,6 +21,7 @@ main :: proc() {
     defer editor.editor_destroy(&state)
 
     for !rl.WindowShouldClose() {
+        editor.editor_handle_input(&state)
         rl.BeginDrawing()
         render.render_editor(&state.buff, &state.font, &state.theme)
         rl.EndDrawing()

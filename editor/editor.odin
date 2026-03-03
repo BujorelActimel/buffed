@@ -1,16 +1,18 @@
 package editor
 
 import rl "vendor:raylib"
-import "core:os"
 import "../config"
 import "../render"
 import "../buffer"
+import "../cursor"
 
 Editor_State :: struct {
     config: config.Config,
     theme:  render.Theme,
     font:   render.Font_Info,
-    buff:    buffer.Buffer,
+    buff:   buffer.Buffer,
+    cursor: cursor.Selection,
+    keymap: Keymap,
 }
 
 editor_init :: proc(file_path: string) -> (Editor_State, bool) {
@@ -24,6 +26,7 @@ editor_init :: proc(file_path: string) -> (Editor_State, bool) {
     rl.SetTargetFPS(60)
 
     state.font = render.font_load(state.config)
+    state.keymap = keymap_default()
 
     if file_path != "" {
         state.buff, _ = buffer.buffer_load_file(file_path)
@@ -36,5 +39,6 @@ editor_destroy :: proc(state: ^Editor_State) {
     config.config_destroy(&state.config)
     buffer.buffer_destroy(&state.buff)
     rl.UnloadFont(state.font.font)
+    delete(state.keymap)
     rl.CloseWindow()
 }

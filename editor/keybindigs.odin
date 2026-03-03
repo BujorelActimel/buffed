@@ -19,21 +19,21 @@ Keymap :: map[Key_Chord]Command
 key_name_to_key :: proc(name: string) -> (rl.KeyboardKey, bool) {
     switch name {
     // special keys
-    case "space":              return .Space, true
-    case "enter":              return .Enter, true
-    case "tab":                return .Tab, true
-    case "backspace":          return .Backspace, true
-    case "escape", "esc":      return .Escape, true
-    case "delete", "del":      return .Delete, true
-    case "insert":             return .Insert, true
-    case "up":                 return .Up, true
-    case "down":               return .Down, true
-    case "left":               return .Left, true
-    case "right":              return .Right, true
-    case "home":               return .Home, true
-    case "end":                return .End, true
-    case "pageup":             return .Page_Up, true
-    case "pagedown":           return .Page_Down, true
+    case "space":              return .SPACE, true
+    case "enter":              return .ENTER, true
+    case "tab":                return .TAB, true
+    case "backspace":          return .BACKSPACE, true
+    case "escape", "esc":      return .ESCAPE, true
+    case "delete", "del":      return .DELETE, true
+    case "insert":             return .INSERT, true
+    case "up":                 return .UP, true
+    case "down":               return .DOWN, true
+    case "left":               return .LEFT, true
+    case "right":              return .RIGHT, true
+    case "home":               return .HOME, true
+    case "end":                return .END, true
+    case "pageup":             return .PAGE_UP, true
+    case "pagedown":           return .PAGE_DOWN, true
     // function keys
     case "f1":                 return .F1, true
     case "f2":                 return .F2, true
@@ -75,30 +75,30 @@ key_name_to_key :: proc(name: string) -> (rl.KeyboardKey, bool) {
     case "y":                  return .Y, true
     case "z":                  return .Z, true
     // digits
-    case "0":                  return .Zero, true
-    case "1":                  return .One, true
-    case "2":                  return .Two, true
-    case "3":                  return .Three, true
-    case "4":                  return .Four, true
-    case "5":                  return .Five, true
-    case "6":                  return .Six, true
-    case "7":                  return .Seven, true
-    case "8":                  return .Eight, true
-    case "9":                  return .Nine, true
+    case "0":                  return .ZERO, true
+    case "1":                  return .ONE, true
+    case "2":                  return .TWO, true
+    case "3":                  return .THREE, true
+    case "4":                  return .FOUR, true
+    case "5":                  return .FIVE, true
+    case "6":                  return .SIX, true
+    case "7":                  return .SEVEN, true
+    case "8":                  return .EIGHT, true
+    case "9":                  return .NINE, true
     // symbols
-    case "minus",        "-":  return .Minus, true
-    case "equal",        "=":  return .Equal, true
-    case "semicolon",    ";":  return .Semicolon, true
-    case "apostrophe",   "'":  return .Apostrophe, true
-    case "comma",        ",":  return .Comma, true
-    case "period",       ".":  return .Period, true
-    case "slash",        "/":  return .Slash, true
-    case "backslash",   "\\":  return .Backslash, true
-    case "grave",        "`":  return .Grave, true
-    case "leftbracket",  "[":  return .Left_Bracket, true
-    case "rightbracket", "]":  return .Right_Bracket, true
+    case "minus",        "-":  return .MINUS, true
+    case "equal",        "=":  return .EQUAL, true
+    case "semicolon",    ";":  return .SEMICOLON, true
+    case "apostrophe",   "'":  return .APOSTROPHE, true
+    case "comma",        ",":  return .COMMA, true
+    case "period",       ".":  return .PERIOD, true
+    case "slash",        "/":  return .SLASH, true
+    case "backslash",   "\\":  return .BACKSLASH, true
+    case "grave",        "`":  return .GRAVE, true
+    case "leftbracket",  "[":  return .LEFT_BRACKET, true
+    case "rightbracket", "]":  return .RIGHT_BRACKET, true
     }
-    return .Null, false
+    return {}, false
 }
 
 chord_from_str :: proc(s: string) -> (Key_Chord, bool) {
