@@ -13,11 +13,20 @@ run :: proc() {
     state, _ := editor.editor_init(file_path)
     defer editor.editor_destroy(&state)
 
+    title: cstring = "Buffed"
+    title_dirty: cstring = "Buffed *"
+    prev_modified := false
+    rl.SetWindowTitle(title)
+
     for !rl.WindowShouldClose() {
         editor.editor_handle_input(&state)
         rl.BeginDrawing()
         render.render_editor(&state.buff, &state.font, &state.theme, state.cursor.head, state.scroll)
         rl.EndDrawing()
+        if prev_modified != state.buff.modified {
+            rl.SetWindowTitle(title_dirty if state.buff.modified else title)
+            prev_modified = state.buff.modified
+        }
     }
 }
 

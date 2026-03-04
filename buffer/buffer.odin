@@ -39,6 +39,13 @@ buffer_load_file :: proc(path: string) -> (Buffer, bool) {
     return buff, true
 }
 
+buffer_destroy :: proc(buff: ^Buffer) {
+    delete(buff.data)
+    delete(buff.line_ends)
+    delete(buff.file_path)
+    history_destroy(&buff.history)
+}
+
 buffer_get_line :: proc(buff: ^Buffer, line: int) -> string {
     if line < 0 || line >= len(buff.line_ends) do return ""
 
@@ -151,9 +158,12 @@ buffer_delete :: proc(buff: ^Buffer, pos: int, count: int, record: bool = true) 
     buff.modified = true
 }
 
-buffer_destroy :: proc(buff: ^Buffer) {
-    delete(buff.data)
-    delete(buff.line_ends)
-    delete(buff.file_path)
-    history_destroy(&buff.history)
+buffer_save_file :: proc(buff: ^Buffer) -> bool {
+    if buff.file_path == "" {
+        return false
+    }
+
+    ok := os.write_entire_file(buff.file_path, buff.data[:])
+    if ok do buff.modified = false
+    return ok
 }

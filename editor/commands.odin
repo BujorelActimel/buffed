@@ -39,7 +39,7 @@ execute_command :: proc(state: ^Editor_State, cmd: Command) {
     case .Redo:
         buffer.buffer_redo(&state.buff)
     case .Save:
-        // TODO: buffer_save_file
+        _ = buffer.buffer_save_file(&state.buff) // discard result for now
     case .Copy:             // TODO: multi-cursor phase
     case .Cut:              // TODO: multi-cursor phase
     case .Paste:            // TODO: multi-cursor phase
