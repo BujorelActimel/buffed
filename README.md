@@ -7,6 +7,23 @@ A minimal, fast code editor written in [Odin](https://odin-lang.org/) using [Ray
 - [Odin](https://odin-lang.org/) `dev-2025-11` or later
 - Raylib 5.5 (vendored with Odin)
 
+## Setup
+
+Install tree-sitter and the default language grammars (one-time):
+
+```bash
+git clone https://github.com/laytan/odin-tree-sitter vendor/tree-sitter
+odin run vendor/tree-sitter/build -- install
+odin run vendor/tree-sitter/build -- install-parser https://github.com/tree-sitter-grammars/tree-sitter-odin
+odin run vendor/tree-sitter/build -- install-parser https://github.com/tree-sitter/tree-sitter-c
+odin run vendor/tree-sitter/build -- install-parser https://github.com/tree-sitter/tree-sitter-rust
+odin run vendor/tree-sitter/build -- install-parser https://github.com/tree-sitter/tree-sitter-go
+odin run vendor/tree-sitter/build -- install-parser https://github.com/tree-sitter/tree-sitter-python
+odin run vendor/tree-sitter/build -- install-parser https://github.com/tree-sitter/tree-sitter-json
+```
+
+To add more languages, find the parser at the [tree-sitter parser list](https://github.com/tree-sitter/tree-sitter/wiki/List-of-parsers) and run `install-parser` with its URL.
+
 ## Build
 
 ```bash
