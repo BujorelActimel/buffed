@@ -2,6 +2,15 @@ package buffer
 
 import "core:os"
 import "core:strings"
+import "core:path/filepath"
+import ts "../vendor/tree-sitter"
+
+import ts_odin "../vendor/tree-sitter/parsers/odin"
+import ts_json "../vendor/tree-sitter/parsers/json"
+import ts_go "../vendor/tree-sitter/parsers/go"
+import ts_c "../vendor/tree-sitter/parsers/c"
+import ts_rust "../vendor/tree-sitter/parsers/rust"
+import ts_python "../vendor/tree-sitter/parsers/python"
 
 Buffer :: struct {
     data:      [dynamic]u8,
@@ -9,6 +18,13 @@ Buffer :: struct {
     file_path: string,
     modified:  bool,
     history:   History,
+    syntax:    Maybe(Syntax),
+}
+
+Syntax :: struct {
+    parser: ts.Parser,
+    tree:   ts.Tree,
+    query:  ts.Query,
 }
 
 buffer_load_file :: proc(path: string) -> (Buffer, bool) {
@@ -30,10 +46,21 @@ buffer_load_file :: proc(path: string) -> (Buffer, bool) {
     delete(data)
     file_path := strings.clone(path)
 
+    syntax: Maybe(Syntax)
+    lang, highlights, lang_ok := buffer_detect_language(file_path)
+    if lang_ok {
+        parser := ts.parser_new()
+        ts.parser_set_language(parser, lang)
+        tree         := ts.parser_parse_string(parser, string(dyn_data[:]))
+        query, _, _  := ts.query_new(lang, highlights)
+        syntax        = Syntax{parser = parser, tree = tree, query = query}
+    }
+
     buff := Buffer{
-        data = dyn_data,
+        data      = dyn_data,
         line_ends = line_ends,
         file_path = file_path,
+        syntax    = syntax,
     }
 
     return buff, true
@@ -44,6 +71,11 @@ buffer_destroy :: proc(buff: ^Buffer) {
     delete(buff.line_ends)
     delete(buff.file_path)
     history_destroy(&buff.history)
+    if syn, ok := buff.syntax.?; ok {
+        ts.parser_delete(syn.parser)
+        ts.tree_delete(syn.tree)
+        ts.query_delete(syn.query)
+    }
 }
 
 buffer_get_line :: proc(buff: ^Buffer, line: int) -> string {
@@ -110,6 +142,22 @@ buffer_insert :: proc(buff: ^Buffer, pos: int, data: []u8, record: bool = true) 
     }
 
     buff.modified = true
+    if syn, ok := buff.syntax.?; ok {
+        start_point := byte_to_point(pos, buff.line_ends)
+        edit := ts.Input_Edit{
+            start_byte    = u32(pos),
+            old_end_byte  = u32(pos),
+            new_end_byte  = u32(pos + n),
+            start_point   = start_point,
+            old_end_point = start_point,
+            new_end_point = byte_to_point(pos + n, buff.line_ends),
+        }
+        ts.tree_edit(syn.tree, &edit)
+        new_tree    := ts.parser_parse_string(syn.parser, string(buff.data[:]), syn.tree)
+        ts.tree_delete(syn.tree)
+        syn.tree     = new_tree
+        buff.syntax  = syn
+    }
 }
 
 buffer_delete :: proc(buff: ^Buffer, pos: int, count: int, record: bool = true) {
@@ -119,6 +167,12 @@ buffer_delete :: proc(buff: ^Buffer, pos: int, count: int, record: bool = true) 
         data_copy := make([]u8, count)
         copy(data_copy, buff.data[pos:pos+count])
         append(&buff.history.undo, Edit_Record{kind = .Delete, pos = pos, data = data_copy})
+    }
+
+    start_point, old_end_point: ts.Point
+    if _, ok := buff.syntax.?; ok {
+        start_point   = byte_to_point(pos,         buff.line_ends)
+        old_end_point = byte_to_point(pos + count,  buff.line_ends)
     }
 
     copy(buff.data[pos:], buff.data[pos+count:])
@@ -156,6 +210,21 @@ buffer_delete :: proc(buff: ^Buffer, pos: int, count: int, record: bool = true) 
     }
 
     buff.modified = true
+    if syn, ok := buff.syntax.?; ok {
+        edit := ts.Input_Edit{
+            start_byte    = u32(pos),
+            old_end_byte  = u32(pos + count),
+            new_end_byte  = u32(pos),
+            start_point   = start_point,
+            old_end_point = old_end_point,
+            new_end_point = start_point,
+        }
+        ts.tree_edit(syn.tree, &edit)
+        new_tree    := ts.parser_parse_string(syn.parser, string(buff.data[:]), syn.tree)
+        ts.tree_delete(syn.tree)
+        syn.tree     = new_tree
+        buff.syntax  = syn
+    }
 }
 
 buffer_save_file :: proc(buff: ^Buffer) -> bool {
@@ -166,4 +235,32 @@ buffer_save_file :: proc(buff: ^Buffer) -> bool {
     ok := os.write_entire_file(buff.file_path, buff.data[:])
     if ok do buff.modified = false
     return ok
+}
+
+byte_to_point :: proc(offset: int, line_ends: [dynamic]int) -> ts.Point {
+    lo, hi := 0, len(line_ends)
+    for lo < hi {
+        mid := lo + (hi - lo) / 2
+        if line_ends[mid] < offset {
+            lo = mid + 1
+        } else {
+            hi = mid
+        }
+    }
+    line       := lo
+    line_start := line_ends[line-1] + 1 if line > 0 else 0
+    return ts.Point{row = u32(line), col = u32(offset - line_start)}
+}
+
+buffer_detect_language :: proc(file_path: string) -> (ts.Language, string, bool) {
+    ext := filepath.ext(file_path)
+    switch ext {
+        case ".odin":    return ts_odin.tree_sitter_odin(), ts_odin.HIGHLIGHTS, true
+        case ".c", ".h": return ts_c.tree_sitter_c(),       ts_c.HIGHLIGHTS,    true
+        case ".rs":      return ts_rust.tree_sitter_rust(),  ts_rust.HIGHLIGHTS,  true
+        case ".go":      return ts_go.tree_sitter_go(),      ts_go.HIGHLIGHTS,    true
+        case ".py":      return ts_python.tree_sitter_python(), ts_python.HIGHLIGHTS, true
+        case ".json":    return ts_json.tree_sitter_json(),  ts_json.HIGHLIGHTS,  true
+    }
+    return nil, "", false
 }
