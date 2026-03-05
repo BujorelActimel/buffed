@@ -14,6 +14,7 @@
   "preproc":   "#d3869b",
   "function":  "#fabd2f",
   "constant":  "#d3869b",
+  "attribute": "#8ec07c",
   "cursor":    "#ebdbb2",
   "line_num":  "#7c6f64",
   "error":     "#cc241d",

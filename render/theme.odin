@@ -3,6 +3,7 @@ package render
 import "core:os"
 import "core:encoding/json"
 import "core:strconv"
+import "core:strings"
 import "core:mem/virtual"
 import "core:fmt"
 import rl "vendor:raylib"
@@ -25,6 +26,7 @@ Theme :: struct {
     preproc:   rl.Color,
     function:  rl.Color,
     constant:  rl.Color,
+    attribute: rl.Color,
     cursor:    rl.Color,
     line_num:  rl.Color,
     error:     rl.Color,
@@ -52,6 +54,7 @@ Theme_Json :: struct {
     preproc:    string,
     function:   string,
     constant:   string,
+    attribute:  string,
     cursor:     string,
     line_num:   string,
     error:      string,
@@ -87,6 +90,7 @@ theme_parse :: proc(data: []u8) -> (Theme, bool) {
         preproc    = hex_to_color(raw.preproc),
         function   = hex_to_color(raw.function),
         constant   = hex_to_color(raw.constant),
+        attribute  = hex_to_color(raw.attribute),
         cursor     = hex_to_color(raw.cursor),
         line_num   = hex_to_color(raw.line_num),
         error      = hex_to_color(raw.error),
@@ -130,6 +134,32 @@ token_color :: proc(t: ^Theme, kind: Token_Kind) -> (color: rl.Color) {
         case .Normal:       color = t.fg
     }
     return
+}
+
+theme_color_for_capture :: proc(t: ^Theme, name: string) -> rl.Color {
+    if strings.has_prefix(name, "keyword.type") do return t.type_kw
+    if strings.has_prefix(name, "keyword")      do return t.keyword
+    if strings.has_prefix(name, "include")      do return t.keyword
+    if strings.has_prefix(name, "storageclass") do return t.keyword
+    if strings.has_prefix(name, "conditional")  do return t.keyword
+    if strings.has_prefix(name, "repeat")       do return t.keyword
+    if strings.has_prefix(name, "type")         do return t.type_c
+    if strings.has_prefix(name, "string")       do return t.string_lit
+    if strings.has_prefix(name, "character")    do return t.string_lit
+    if strings.has_prefix(name, "number")       do return t.number
+    if strings.has_prefix(name, "float")        do return t.number
+    if strings.has_prefix(name, "boolean")      do return t.constant
+    if strings.has_prefix(name, "comment")      do return t.comment
+    if strings.has_prefix(name, "operator")     do return t.operator
+    if strings.has_prefix(name, "function")     do return t.function
+    if strings.has_prefix(name, "constructor")  do return t.function
+    if strings.has_prefix(name, "escape")       do return t.string_lit
+    if strings.has_prefix(name, "variable.builtin") do return t.constant
+    if strings.has_prefix(name, "constant")     do return t.constant
+    if strings.has_prefix(name, "attribute")    do return t.attribute
+    if strings.has_prefix(name, "preproc")      do return t.preproc
+    if strings.has_prefix(name, "error")        do return t.error
+    return t.fg
 }
 
 hex_to_color :: proc(hex: string) -> rl.Color {

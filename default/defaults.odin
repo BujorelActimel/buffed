@@ -1,7 +1,7 @@
 package default
 
 DEFAULT_FONT        :: #load("fonts/JetBrainsMonoNerdFont-SemiBold.ttf")
-DEFAULT_THEME       :: #load("themes/gruvbox-dark.theme")
+DEFAULT_THEME       :: #load("themes/gruvbox-dark.theme.json")
 DEFAULT_KEYBINDINGS :: #load("keybindings.json")
 
 DEFAULT_LANG_ODIN   :: #load("langs/odin.lang")
