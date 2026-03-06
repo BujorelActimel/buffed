@@ -179,8 +179,8 @@ keymap_load :: proc(path: string) -> Keymap {
     defer virtual.arena_destroy(&arena)
     arena_allocator := virtual.arena_allocator(&arena)
 
-    data, ok := os.read_entire_file(path, arena_allocator)
-    if !ok do return m
+    data, read_err := os.read_entire_file(path, arena_allocator)
+    if read_err != nil do return m
 
     raw: map[string]string
     if err := json.unmarshal(data, &raw, allocator = arena_allocator); err != nil {

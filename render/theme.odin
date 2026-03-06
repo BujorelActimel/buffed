@@ -111,8 +111,8 @@ theme_load :: proc(conf: config.Config) -> (Theme, bool) {
     defer virtual.arena_destroy(&arena)
     arena_allocator := virtual.arena_allocator(&arena)
 
-    data, ok := os.read_entire_file(conf.theme_path, arena_allocator)
-    if !ok {
+    data, read_err := os.read_entire_file(conf.theme_path, arena_allocator)
+    if read_err != nil {
         fmt.println("Theme file missing, falling back to embedded default")
         return theme_parse(defaults.DEFAULT_THEME)
     }

@@ -28,8 +28,8 @@ Syntax :: struct {
 }
 
 buffer_load_file :: proc(path: string) -> (Buffer, bool) {
-    data, ok := os.read_entire_file(path)    
-    if !ok {
+    data, read_err := os.read_entire_file(path, context.allocator)
+    if read_err != nil {
         return {}, false
     }
 
@@ -232,9 +232,9 @@ buffer_save_file :: proc(buff: ^Buffer) -> bool {
         return false
     }
 
-    ok := os.write_entire_file(buff.file_path, buff.data[:])
-    if ok do buff.modified = false
-    return ok
+    err := os.write_entire_file(buff.file_path, buff.data[:])
+    if err == nil do buff.modified = false
+    return err == nil
 }
 
 byte_to_point :: proc(offset: int, line_ends: [dynamic]int) -> ts.Point {

@@ -44,9 +44,9 @@ config_load :: proc() -> (Config, bool) {
         return DEFAULT_CONFIG, false
     }
 
-    data, ok := os.read_entire_file(path, arena_allocator)
+    data, read_err := os.read_entire_file(path, arena_allocator)
 
-    if !ok {
+    if read_err != nil {
         fmt.println("Base configuration file is missing or couldn't be opened")
         return DEFAULT_CONFIG, false
     }
