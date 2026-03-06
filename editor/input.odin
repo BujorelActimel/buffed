@@ -83,6 +83,26 @@ editor_handle_input :: proc(state: ^Editor_State) {
             state.cursor.head  += n
             state.cursor.anchor = state.cursor.head
         }
+
+        if key_active(.ENTER) {
+            buffer.buffer_insert(&state.buff, state.cursor.head, []u8{'\n'})
+            state.cursor.head  += 1
+            state.cursor.anchor = state.cursor.head
+        }
+
+        if key_active(.TAB) {
+            if state.config.use_spaces {
+                n := min(state.config.tab_size, 8)
+                spaces: [8]u8
+                for i in 0..<n { spaces[i] = ' ' }
+                buffer.buffer_insert(&state.buff, state.cursor.head, spaces[:n])
+                state.cursor.head  += n
+            } else {
+                buffer.buffer_insert(&state.buff, state.cursor.head, []u8{'\t'})
+                state.cursor.head  += 1
+            }
+            state.cursor.anchor = state.cursor.head
+        }
     }
 
     // mouse wheel / trackpad scroll

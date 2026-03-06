@@ -21,7 +21,7 @@ run :: proc() {
     for !rl.WindowShouldClose() {
         editor.editor_handle_input(&state)
         rl.BeginDrawing()
-        render.render_editor(&state.buff, &state.font, &state.theme, state.cursor.head, state.scroll)
+        render.render_editor(&state.buff, &state.font, &state.theme, state.cursor.head, state.scroll, state.config.tab_size)
         rl.EndDrawing()
         if prev_modified != state.buff.modified {
             rl.SetWindowTitle(title_dirty if state.buff.modified else title)
