@@ -35,9 +35,13 @@ editor_delete_line :: proc(state: ^Editor_State) {
 execute_command :: proc(state: ^Editor_State, cmd: Command) {
     switch cmd {
     case .Undo:
-        buffer.buffer_undo(&state.buff)
+        if ok, pos := buffer.buffer_undo(&state.buff); ok {
+            state.cursor = {anchor = pos, head = pos}
+        }
     case .Redo:
-        buffer.buffer_redo(&state.buff)
+        if ok, pos := buffer.buffer_redo(&state.buff); ok {
+            state.cursor = {anchor = pos, head = pos}
+        }
     case .Save:
         _ = buffer.buffer_save_file(&state.buff) // discard result for now
     case .Copy:             // TODO: multi-cursor phase
