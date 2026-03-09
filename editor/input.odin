@@ -25,6 +25,11 @@ editor_handle_input :: proc(state: ^Editor_State) {
         }
     }
 
+    // repeat-enabled chord commands (held key fires repeatedly)
+    if rl.IsKeyPressedRepeat(.B) && ctrl {
+        execute_command(state, .Toggle_File_Tree)
+    }
+
     if key_active(.UP) && !ctrl && !alt {
         state.cursor = cursor.cursor_move_up(state.cursor, &state.buff, shift)
     }

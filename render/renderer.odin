@@ -6,17 +6,14 @@ import rl "vendor:raylib"
 import "../buffer"
 import ts "../vendor/tree-sitter"
 
-render_editor :: proc(buf: ^buffer.Buffer, font: ^Font_Info, theme: ^Theme, cursor_head: int, scroll: int, tab_size: int) {
-    screen_w := rl.GetScreenWidth()
-    screen_h := rl.GetScreenHeight()
+render_editor :: proc(buf: ^buffer.Buffer, font: ^Font_Info, theme: ^Theme, layout: Layout, cursor_head: int, scroll: int, tab_size: int) {
+    rl.DrawRectangleRec(layout.editor, theme.bg_editor)
 
-    rl.ClearBackground(theme.bg_editor)
-
-    rl.BeginScissorMode(0, 0, screen_w, screen_h)
+    rl.BeginScissorMode(i32(layout.editor.x), i32(layout.editor.y), i32(layout.editor.width), i32(layout.editor.height))
     defer rl.EndScissorMode()
 
     line_count    := buffer.buffer_line_count(buf)
-    visible_lines := int(f32(screen_h) / font.glyph_h) + 2
+    visible_lines := int(layout.editor.height / font.glyph_h) + 2
     first_line    := scroll
     last_line     := min(line_count, first_line + visible_lines)
 
@@ -65,9 +62,9 @@ render_editor :: proc(buf: ^buffer.Buffer, font: ^Font_Info, theme: ^Theme, curs
 
     for i in first_line..<last_line {
         line     := buffer.buffer_get_line(buf, i)
-        y        := f32(i - scroll) * font.glyph_h
+        y        := layout.editor.y + f32(i - scroll) * font.glyph_h
         byte_pos := u32(buffer.buffer_line_start(buf, i))
-        x: f32    = 0
+        x: f32    = layout.editor.x
 
         for ch in line {
             // advance past expired captures
@@ -100,8 +97,8 @@ render_editor :: proc(buf: ^buffer.Buffer, font: ^Font_Info, theme: ^Theme, curs
     // block cursor
     cursor_line := buffer_cursor_line(buf, cursor_head)
     cursor_col  := cursor_head - buffer.buffer_line_start(buf, cursor_line)
-    cursor_x    := f32(cursor_col) * font.glyph_w
-    cursor_y    := f32(cursor_line - scroll) * font.glyph_h
+    cursor_x    := layout.editor.x + f32(cursor_col) * font.glyph_w
+    cursor_y    := layout.editor.y + f32(cursor_line - scroll) * font.glyph_h
 
     rl.DrawRectangleV(
         rl.Vector2{cursor_x, cursor_y},

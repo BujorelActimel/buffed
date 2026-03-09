@@ -21,7 +21,13 @@ run :: proc() {
     for !rl.WindowShouldClose() {
         editor.editor_handle_input(&state)
         rl.BeginDrawing()
-        render.render_editor(&state.buff, &state.font, &state.theme, state.cursor.head, state.scroll, state.config.tab_size)
+        rl.ClearBackground(state.theme.bg)
+        layout := render.layout_compute(rl.GetScreenWidth(), rl.GetScreenHeight(), &state.font, state.side_tree_open)
+        render.render_top_bar(layout, &state.theme)
+        render.render_side_tree(layout, &state.theme)
+        render.render_gutter(layout, &state.theme)
+        render.render_editor(&state.buff, &state.font, &state.theme, layout, state.cursor.head, state.scroll, state.config.tab_size)
+        render.render_status_bar(layout, &state.theme)
         rl.EndDrawing()
         if prev_modified != state.buff.modified {
             rl.SetWindowTitle(title_dirty if state.buff.modified else title)

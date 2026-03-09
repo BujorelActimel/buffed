@@ -58,6 +58,7 @@ execute_command :: proc(state: ^Editor_State, cmd: Command) {
     case .Go_To_Definition: // TODO: LSP phase
     case .Add_Cursor_Above: // TODO: multi-cursor phase
     case .Add_Cursor_Below: // TODO: multi-cursor phase
-    case .Toggle_File_Tree: // TODO: file tree phase
+    case .Toggle_File_Tree:
+        state.side_tree_open = !state.side_tree_open
     }
 }
