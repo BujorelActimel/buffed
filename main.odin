@@ -25,8 +25,12 @@ run :: proc() {
         layout := render.layout_compute(rl.GetScreenWidth(), rl.GetScreenHeight(), &state.font, state.side_tree_open)
         render.render_top_bar(layout, &state.theme)
         render.render_side_tree(layout, &state.theme)
-        render.render_gutter(layout, &state.theme)
-        render.render_editor(&state.buff, &state.font, &state.theme, layout, state.cursor.head, state.scroll, state.config.tab_size)
+        if state.buff.file_path == "" {
+            render.render_splash(layout, &state.theme)
+        } else {
+            render.render_gutter(layout, &state.theme)
+            render.render_editor(&state.buff, &state.font, &state.theme, layout, state.cursor.head, state.scroll, state.config.tab_size)
+        }
         render.render_status_bar(layout, &state.theme)
         rl.EndDrawing()
         if prev_modified != state.buff.modified {
