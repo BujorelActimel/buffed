@@ -25,11 +25,12 @@ editor_init :: proc(file_path: string) -> (Editor_State, bool) {
 
     rl.SetConfigFlags({.WINDOW_RESIZABLE})
     rl.InitWindow(0, 0, "Buffed")
+    rl.SetExitKey(.KEY_NULL)
     rl.SetTargetFPS(60)
 
     state.font           = render.font_load(state.config)
     state.keymap         = keymap_default()
-    state.side_tree_open = true
+    state.side_tree_open = false
 
     if file_path != "" {
         state.buff, _ = buffer.buffer_load_file(file_path)

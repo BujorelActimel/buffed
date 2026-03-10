@@ -17,8 +17,8 @@ render_splash :: proc(layout: Layout, theme: ^Theme) {
         loaded = true
     }
 
-    scale :: f32(0.5)
+    scale :: f32(0.65)
     x := layout.editor.x + (layout.editor.width  - f32(texture.width)  * scale) * 0.5
-    y := layout.editor.y + (layout.editor.height - f32(texture.height) * scale) * 0.5
+    y := layout.editor.y + (layout.editor.height - f32(texture.height) * scale) * 0.1
     rl.DrawTextureEx(texture, {x, y}, 0, scale, rl.WHITE)
 }
