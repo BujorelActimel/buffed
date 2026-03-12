@@ -71,7 +71,7 @@ run :: proc() {
             render.render_splash(layout, &state.theme)
         } else {
             view := &state.views[state.active_view]
-            render.render_gutter(layout, &state.theme)
+            render.render_gutter(layout, &state.font, &state.theme, &view.buf, view.cursor.head, view.scroll)
             render.render_editor(&view.buf, &state.font, &state.theme, layout, view.cursor.head, view.scroll, state.config.tab_size)
         }
         render.render_status_bar(layout, &state.theme)
