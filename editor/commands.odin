@@ -1,5 +1,6 @@
 package editor
 
+import "core:strings"
 import "../buffer"
 import "../cursor"
 
@@ -19,6 +20,7 @@ Command :: enum {
     Add_Cursor_Above,
     Add_Cursor_Below,
     Toggle_File_Tree,
+    New_Buffer,
     Open_Buffer,
     Close_Buffer,
     Next_Buffer,
@@ -41,6 +43,8 @@ execute_command :: proc(state: ^Editor_State, cmd: Command) {
     #partial switch cmd {
     case .Toggle_File_Tree:
         state.side_tree_open = !state.side_tree_open
+    case .New_Buffer:
+        editor_new(state)
     case .Open_Buffer:
         if path, ok := file_picker_open(); ok {
             editor_open(state, path)
@@ -73,7 +77,15 @@ execute_command :: proc(state: ^Editor_State, cmd: Command) {
                 view.cursor = {anchor = pos, head = pos}
             }
         case .Save:
-            _ = buffer.buffer_save_file(&view.buf)
+            if view.buf.file_path == "" {
+                if path, ok := file_picker_save(); ok {
+                    view.buf.file_path = strings.clone(path)
+                    delete(path)
+                    _ = buffer.buffer_save_file(&view.buf)
+                }
+            } else {
+                _ = buffer.buffer_save_file(&view.buf)
+            }
         case .Delete_Line:
             editor_delete_line(state)
         case .Move_Word_Left:

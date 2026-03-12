@@ -55,6 +55,11 @@ editor_destroy :: proc(state: ^Editor_State) {
     rl.CloseWindow()
 }
 
+editor_new :: proc(state: ^Editor_State) {
+    append(&state.views, Buffer_View{buf = buffer.buffer_new()})
+    state.active_view = len(state.views) - 1
+}
+
 editor_open :: proc(state: ^Editor_State, path: string) {
     buff, ok := buffer.buffer_load_file(path)
     if !ok do return

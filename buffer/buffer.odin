@@ -66,6 +66,15 @@ buffer_load_file :: proc(path: string) -> (Buffer, bool) {
     return buff, true
 }
 
+buffer_new :: proc() -> Buffer {
+    line_ends: [dynamic]int
+    append(&line_ends, 0)
+    return Buffer{
+        data      = make([dynamic]u8),
+        line_ends = line_ends,
+    }
+}
+
 buffer_destroy :: proc(buff: ^Buffer) {
     delete(buff.data)
     delete(buff.line_ends)

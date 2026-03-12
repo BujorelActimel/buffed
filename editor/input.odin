@@ -35,6 +35,16 @@ editor_handle_input :: proc(state: ^Editor_State) {
         execute_command(state, .Prev_Buffer)
     }
 
+    // ctrl+1..9 — jump directly to buffer by index
+    if ctrl {
+        digit_keys := [9]rl.KeyboardKey{.ONE, .TWO, .THREE, .FOUR, .FIVE, .SIX, .SEVEN, .EIGHT, .NINE}
+        for key, idx in digit_keys {
+            if rl.IsKeyPressed(key) && idx < len(state.views) {
+                state.active_view = idx
+            }
+        }
+    }
+
     if len(state.views) == 0 do return
 
     view          := &state.views[state.active_view]

@@ -8,3 +8,9 @@ file_picker_open :: proc() -> (path: string, ok: bool) {
     if result == nil do return "", false
     return strings.clone(string(result)), true
 }
+
+file_picker_save :: proc() -> (path: string, ok: bool) {
+    result := tinyfd.tinyfd_saveFileDialog("Save File", "", 0, nil, nil)
+    if result == nil do return "", false
+    return strings.clone(string(result)), true
+}
