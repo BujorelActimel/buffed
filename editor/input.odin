@@ -10,10 +10,9 @@ key_active :: proc(key: rl.KeyboardKey) -> bool {
 }
 
 editor_handle_input :: proc(state: ^Editor_State) {
-    ctrl         := rl.IsKeyDown(.LEFT_CONTROL)  || rl.IsKeyDown(.RIGHT_CONTROL)
-    shift        := rl.IsKeyDown(.LEFT_SHIFT)    || rl.IsKeyDown(.RIGHT_SHIFT)
-    alt          := rl.IsKeyDown(.LEFT_ALT)      || rl.IsKeyDown(.RIGHT_ALT)
-    cursor_before := state.cursor.head
+    ctrl  := rl.IsKeyDown(.LEFT_CONTROL)  || rl.IsKeyDown(.RIGHT_CONTROL)
+    shift := rl.IsKeyDown(.LEFT_SHIFT)    || rl.IsKeyDown(.RIGHT_SHIFT)
+    alt   := rl.IsKeyDown(.LEFT_ALT)      || rl.IsKeyDown(.RIGHT_ALT)
 
     // chord commands via keymap (fires once per press, no repeat)
     for {
@@ -29,53 +28,64 @@ editor_handle_input :: proc(state: ^Editor_State) {
     if rl.IsKeyPressedRepeat(.B) && ctrl {
         execute_command(state, .Toggle_File_Tree)
     }
+    if rl.IsKeyPressedRepeat(.TAB) && ctrl && !shift {
+        execute_command(state, .Next_Buffer)
+    }
+    if rl.IsKeyPressedRepeat(.TAB) && ctrl && shift {
+        execute_command(state, .Prev_Buffer)
+    }
+
+    if len(state.views) == 0 do return
+
+    view          := &state.views[state.active_view]
+    cursor_before := view.cursor.head
 
     if key_active(.UP) && !ctrl && !alt {
-        state.cursor = cursor.cursor_move_up(state.cursor, &state.buff, shift)
+        view.cursor = cursor.cursor_move_up(view.cursor, &view.buf, shift)
     }
     if key_active(.DOWN) && !ctrl && !alt {
-        state.cursor = cursor.cursor_move_down(state.cursor, &state.buff, shift)
+        view.cursor = cursor.cursor_move_down(view.cursor, &view.buf, shift)
     }
     if key_active(.LEFT) {
         if ctrl {
-            state.cursor = cursor.cursor_move_word_left(state.cursor, &state.buff, shift)
+            view.cursor = cursor.cursor_move_word_left(view.cursor, &view.buf, shift)
         } else {
-            state.cursor = cursor.cursor_move_left(state.cursor, &state.buff, shift)
+            view.cursor = cursor.cursor_move_left(view.cursor, &view.buf, shift)
         }
     }
     if key_active(.RIGHT) {
         if ctrl {
-            state.cursor = cursor.cursor_move_word_right(state.cursor, &state.buff, shift)
+            view.cursor = cursor.cursor_move_word_right(view.cursor, &view.buf, shift)
         } else {
-            state.cursor = cursor.cursor_move_right(state.cursor, &state.buff, shift)
+            view.cursor = cursor.cursor_move_right(view.cursor, &view.buf, shift)
         }
     }
     if key_active(.HOME) {
         if ctrl {
-            state.cursor = cursor.cursor_move_file_start(state.cursor, &state.buff, shift)
+            view.cursor = cursor.cursor_move_file_start(view.cursor, &view.buf, shift)
         } else {
-            state.cursor = cursor.cursor_move_line_start(state.cursor, &state.buff, shift)
+            view.cursor = cursor.cursor_move_line_start(view.cursor, &view.buf, shift)
         }
     }
     if key_active(.END) {
         if ctrl {
-            state.cursor = cursor.cursor_move_file_end(state.cursor, &state.buff, shift)
+            view.cursor = cursor.cursor_move_file_end(view.cursor, &view.buf, shift)
         } else {
-            state.cursor = cursor.cursor_move_line_end(state.cursor, &state.buff, shift)
+            view.cursor = cursor.cursor_move_line_end(view.cursor, &view.buf, shift)
         }
     }
 
     // backspace: delete char before cursor
-    if key_active(.BACKSPACE) && state.cursor.head > 0 {
-        buffer.buffer_delete(&state.buff, state.cursor.head - 1, 1)
-        state.cursor = cursor.cursor_move_left(state.cursor, &state.buff, false)
+    if key_active(.BACKSPACE) && view.cursor.head > 0 {
+        buffer.buffer_delete(&view.buf, view.cursor.head - 1, 1)
+        view.cursor = cursor.cursor_move_left(view.cursor, &view.buf, false)
     }
 
     // delete: delete char at cursor
-    if key_active(.DELETE) && state.cursor.head < len(state.buff.data) {
-        buffer.buffer_delete(&state.buff, state.cursor.head, 1)
-        state.cursor.head   = min(state.cursor.head, max(len(state.buff.data) - 1, 0))
-        state.cursor.anchor = state.cursor.head
+    if key_active(.DELETE) && view.cursor.head < len(view.buf.data) {
+        buffer.buffer_delete(&view.buf, view.cursor.head, 1)
+        view.cursor.head   = min(view.cursor.head, max(len(view.buf.data) - 1, 0))
+        view.cursor.anchor = view.cursor.head
     }
 
     // text insertion (only when no ctrl/alt modifier)
@@ -84,15 +94,15 @@ editor_handle_input :: proc(state: ^Editor_State) {
             char := rl.GetCharPressed()
             if char == 0 do break
             buf, n := utf8.encode_rune(char)
-            buffer.buffer_insert(&state.buff, state.cursor.head, buf[:n])
-            state.cursor.head  += n
-            state.cursor.anchor = state.cursor.head
+            buffer.buffer_insert(&view.buf, view.cursor.head, buf[:n])
+            view.cursor.head  += n
+            view.cursor.anchor = view.cursor.head
         }
 
         if key_active(.ENTER) {
-            buffer.buffer_insert(&state.buff, state.cursor.head, []u8{'\n'})
-            state.cursor.head  += 1
-            state.cursor.anchor = state.cursor.head
+            buffer.buffer_insert(&view.buf, view.cursor.head, []u8{'\n'})
+            view.cursor.head  += 1
+            view.cursor.anchor = view.cursor.head
         }
 
         if key_active(.TAB) {
@@ -100,30 +110,30 @@ editor_handle_input :: proc(state: ^Editor_State) {
                 n := min(state.config.tab_size, 8)
                 spaces: [8]u8
                 for i in 0..<n { spaces[i] = ' ' }
-                buffer.buffer_insert(&state.buff, state.cursor.head, spaces[:n])
-                state.cursor.head  += n
+                buffer.buffer_insert(&view.buf, view.cursor.head, spaces[:n])
+                view.cursor.head  += n
             } else {
-                buffer.buffer_insert(&state.buff, state.cursor.head, []u8{'\t'})
-                state.cursor.head  += 1
+                buffer.buffer_insert(&view.buf, view.cursor.head, []u8{'\t'})
+                view.cursor.head  += 1
             }
-            state.cursor.anchor = state.cursor.head
+            view.cursor.anchor = view.cursor.head
         }
     }
 
     // mouse wheel / trackpad scroll
     wheel := rl.GetMouseWheelMoveV().y
     if wheel != 0 {
-        state.scroll = max(0, state.scroll - int(wheel * 3))
+        view.scroll = max(0, view.scroll - int(wheel * 3))
     }
 
     // scroll follows cursor (only when cursor moved via keyboard)
-    if state.cursor.head != cursor_before {
-        line          := cursor.cursor_line(state.cursor, &state.buff)
+    if view.cursor.head != cursor_before {
+        line          := cursor.cursor_line(view.cursor, &view.buf)
         visible_lines := int(f32(rl.GetScreenHeight()) / state.font.glyph_h)
-        if line < state.scroll {
-            state.scroll = line
-        } else if line >= state.scroll + visible_lines {
-            state.scroll = line - visible_lines + 1
+        if line < view.scroll {
+            view.scroll = line
+        } else if line >= view.scroll + visible_lines {
+            view.scroll = line - visible_lines + 1
         }
     }
 }

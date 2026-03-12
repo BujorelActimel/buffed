@@ -11,5 +11,9 @@
   "f12":            "go_to_definition",
   "ctrl+alt+up":    "add_cursor_above",
   "ctrl+alt+down":  "add_cursor_below",
-  "ctrl+b":         "toggle_file_tree"
+  "ctrl+b":         "toggle_file_tree",
+  "ctrl+o":         "open_buffer",
+  "ctrl+w":         "close_buffer",
+  "ctrl+tab":       "next_buffer",
+  "ctrl+shift+tab": "prev_buffer"
 }

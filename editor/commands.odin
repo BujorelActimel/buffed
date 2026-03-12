@@ -19,46 +19,67 @@ Command :: enum {
     Add_Cursor_Above,
     Add_Cursor_Below,
     Toggle_File_Tree,
+    Open_Buffer,
+    Close_Buffer,
+    Next_Buffer,
+    Prev_Buffer,
 }
 
 editor_delete_line :: proc(state: ^Editor_State) {
-    line       := cursor.cursor_line(state.cursor, &state.buff)
-    line_start := buffer.buffer_line_start(&state.buff, line)
-    line_len   := buffer.buffer_line_length(&state.buff, line)
-    is_last    := line == buffer.buffer_line_count(&state.buff) - 1
+    view := &state.views[state.active_view]
+    line       := cursor.cursor_line(view.cursor, &view.buf)
+    line_start := buffer.buffer_line_start(&view.buf, line)
+    line_len   := buffer.buffer_line_length(&view.buf, line)
+    is_last    := line == buffer.buffer_line_count(&view.buf) - 1
     count      := line_len + 1 if !is_last else line_len
-    buffer.buffer_delete(&state.buff, line_start, count)
-    new_pos := min(line_start, max(len(state.buff.data) - 1, 0))
-    state.cursor = {anchor = new_pos, head = new_pos}
+    buffer.buffer_delete(&view.buf, line_start, count)
+    new_pos := min(line_start, max(len(view.buf.data) - 1, 0))
+    view.cursor = {anchor = new_pos, head = new_pos}
 }
 
 execute_command :: proc(state: ^Editor_State, cmd: Command) {
-    switch cmd {
-    case .Undo:
-        if ok, pos := buffer.buffer_undo(&state.buff); ok {
-            state.cursor = {anchor = pos, head = pos}
+    #partial switch cmd {
+    case .Toggle_File_Tree:
+        state.side_tree_open = !state.side_tree_open
+    case .Open_Buffer:
+        if path, ok := file_picker_open(); ok {
+            editor_open(state, path)
+            delete(path)
         }
-    case .Redo:
-        if ok, pos := buffer.buffer_redo(&state.buff); ok {
-            state.cursor = {anchor = pos, head = pos}
-        }
-    case .Save:
-        _ = buffer.buffer_save_file(&state.buff) // discard result for now
-    case .Copy:             // TODO: multi-cursor phase
-    case .Cut:              // TODO: multi-cursor phase
-    case .Paste:            // TODO: multi-cursor phase
-    case .Delete_Line:
-        editor_delete_line(state)
-    case .Select_Next_Occurrence: // TODO: multi-cursor phase
-    case .Move_Word_Left:
-        state.cursor = cursor.cursor_move_word_left(state.cursor, &state.buff)
-    case .Move_Word_Right:
-        state.cursor = cursor.cursor_move_word_right(state.cursor, &state.buff)
+    case .Close_Buffer:
+        editor_close(state)
+    case .Next_Buffer:
+        editor_next_buffer(state)
+    case .Prev_Buffer:
+        editor_prev_buffer(state)
     case .Open_Fuzzy_Finder:// TODO: fuzzy phase
     case .Go_To_Definition: // TODO: LSP phase
     case .Add_Cursor_Above: // TODO: multi-cursor phase
     case .Add_Cursor_Below: // TODO: multi-cursor phase
-    case .Toggle_File_Tree:
-        state.side_tree_open = !state.side_tree_open
+    case .Copy:             // TODO: multi-cursor phase
+    case .Cut:              // TODO: multi-cursor phase
+    case .Paste:            // TODO: multi-cursor phase
+    case .Select_Next_Occurrence: // TODO: multi-cursor phase
+    case:
+        if len(state.views) == 0 do return
+        view := &state.views[state.active_view]
+        #partial switch cmd {
+        case .Undo:
+            if ok, pos := buffer.buffer_undo(&view.buf); ok {
+                view.cursor = {anchor = pos, head = pos}
+            }
+        case .Redo:
+            if ok, pos := buffer.buffer_redo(&view.buf); ok {
+                view.cursor = {anchor = pos, head = pos}
+            }
+        case .Save:
+            _ = buffer.buffer_save_file(&view.buf)
+        case .Delete_Line:
+            editor_delete_line(state)
+        case .Move_Word_Left:
+            view.cursor = cursor.cursor_move_word_left(view.cursor, &view.buf)
+        case .Move_Word_Right:
+            view.cursor = cursor.cursor_move_word_right(view.cursor, &view.buf)
+        }
     }
 }

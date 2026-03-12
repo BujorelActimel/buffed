@@ -5,9 +5,15 @@ A minimal, fast code editor written in [Odin](https://odin-lang.org/) using [Ray
 ## Requirements
 
 - [Odin](https://odin-lang.org/) `dev-2026-03` or later
-- Raylib 5.5 (vendored with Odin)
 
 ## Setup
+
+Install tinyfiledialogs for the native file picker (one-time):
+
+```bash
+cc -c vendor/tinyfiledialogs/tinyfiledialogs.c -o vendor/tinyfiledialogs/tinyfiledialogs.o
+ar rcs vendor/tinyfiledialogs/libtinyfiledialogs.a vendor/tinyfiledialogs/tinyfiledialogs.o
+```
 
 Install tree-sitter and the default language grammars (one-time):
 

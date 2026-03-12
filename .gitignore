@@ -2,3 +2,5 @@ buffed
 buffed-debug
 TICKETS.md
 vendor/tree-sitter/
+vendor/tinyfiledialogs/*.o
+vendor/tinyfiledialogs/*.a

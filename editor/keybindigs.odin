@@ -143,6 +143,10 @@ command_from_str :: proc(s: string) -> (Command, bool) {
     case "add_cursor_above":        return .Add_Cursor_Above, true
     case "add_cursor_below":        return .Add_Cursor_Below, true
     case "toggle_file_tree":        return .Toggle_File_Tree, true
+    case "open_buffer":             return .Open_Buffer, true
+    case "close_buffer":            return .Close_Buffer, true
+    case "next_buffer":             return .Next_Buffer, true
+    case "prev_buffer":             return .Prev_Buffer, true
     }
     return {}, false
 }
