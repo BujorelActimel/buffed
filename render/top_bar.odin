@@ -11,7 +11,15 @@ Tab_Info :: struct {
     modified: bool,
 }
 
-render_top_bar :: proc(layout: Layout, font: ^Font_Info, theme: ^Theme, tabs: []Tab_Info, active: int, logo_color1, logo_color2: rl.Color) {
+render_top_bar :: proc(
+    layout: Layout, 
+    font: ^Font_Info, 
+    theme: ^Theme, 
+    tabs: []Tab_Info, 
+    active: int, 
+    logo_color1, 
+    logo_color2: rl.Color
+) {
     rl.DrawRectangleRec(layout.top_bar, theme.bg)
 
     text_y := layout.top_bar.y + (layout.top_bar.height - font.glyph_h) / 2
@@ -53,7 +61,7 @@ render_top_bar :: proc(layout: Layout, font: ^Font_Info, theme: ^Theme, tabs: []
         if tab.modified {
             rl.DrawTextCodepoint(font.font, ' ', {cx, text_y}, font.glyph_h, fg)
             cx += font.glyph_w
-            rl.DrawTextCodepoint(font.font, '•', {cx, text_y}, font.glyph_h, theme.warning)
+            rl.DrawTextCodepoint(font.font, '*', {cx, text_y}, font.glyph_h, theme.warning)
         }
 
         rl.DrawRectangle(i32(x + tab_w) - 1, i32(layout.top_bar.y), 1, i32(layout.top_bar.height), SEPARATOR)

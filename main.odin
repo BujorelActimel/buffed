@@ -14,20 +14,9 @@ run :: proc() {
 
     state, _ := editor.editor_init(file_path)
     defer editor.editor_destroy(&state)
+    rl.SetWindowTitle("Buffed")
 
-    title: cstring = "Buffed"
-    title_dirty: cstring = "Buffed *"
-    prev_modified := false
-    rl.SetWindowTitle(title)
-
-    palette := [?]rl.Color{
-        state.theme.keyword,  state.theme.function, state.theme.string_lit,
-        state.theme.number,   state.theme.type_kw,  state.theme.constant,
-        state.theme.attribute, state.theme.preproc,
-    }
-    i := rand.int_max(len(palette))
-    j := (i + 1 + rand.int_max(len(palette) - 1)) % len(palette)
-    logo_color1, logo_color2 := palette[i], palette[j]
+    logo_color1, logo_color2 := state.theme.operator, state.theme.string_lit
 
     for !rl.WindowShouldClose() {
         editor.editor_handle_input(&state)
@@ -74,14 +63,13 @@ run :: proc() {
             render.render_gutter(layout, &state.font, &state.theme, &view.buf, view.cursor.head, view.scroll)
             render.render_editor(&view.buf, &state.font, &state.theme, layout, view.cursor.head, view.scroll, state.config.tab_size)
         }
-        render.render_status_bar(layout, &state.theme)
-        rl.EndDrawing()
-
-        modified := len(state.views) > 0 && state.views[state.active_view].buf.modified
-        if prev_modified != modified {
-            rl.SetWindowTitle(title_dirty if modified else title)
-            prev_modified = modified
+        if len(state.views) > 0 {
+            view := &state.views[state.active_view]
+            render.render_status_bar(layout, &state.font, &state.theme, &view.buf, view.cursor.head, state.git_branch)
+        } else {
+            render.render_status_bar(layout, &state.font, &state.theme, nil, 0, state.git_branch)
         }
+        rl.EndDrawing()
     }
 }
 

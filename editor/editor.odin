@@ -20,6 +20,7 @@ Editor_State :: struct {
     active_view:     int,
     keymap:          Keymap,
     side_tree_open:  bool,
+    git_branch:      string,
 }
 
 editor_init :: proc(file_path: string) -> (Editor_State, bool) {
@@ -36,6 +37,7 @@ editor_init :: proc(file_path: string) -> (Editor_State, bool) {
     state.font           = render.font_load(state.config)
     state.keymap         = keymap_default()
     state.side_tree_open = false
+    state.git_branch     = git_branch_detect(file_path)
 
     if file_path != "" {
         editor_open(&state, file_path)
@@ -52,6 +54,7 @@ editor_destroy :: proc(state: ^Editor_State) {
     delete(state.views)
     rl.UnloadFont(state.font.font)
     delete(state.keymap)
+    delete(state.git_branch)
     rl.CloseWindow()
 }
 
