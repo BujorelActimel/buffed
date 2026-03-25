@@ -7,7 +7,9 @@ import "core:path/filepath"
 // caller owns the resulted string
 git_branch_detect :: proc(cwd: string) -> string {
     dir: string
-    if os.is_dir(cwd) {
+    if cwd == "" {
+        dir, _ = os.get_working_directory(context.allocator)
+    } else if os.is_dir(cwd) {
         dir = strings.clone(cwd)
     } else {
         dir = filepath.dir(cwd)
